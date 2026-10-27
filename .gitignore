@@ -25,3 +25,7 @@
 # =========================
 .DS_Store
 Thumbs.db
+
+/.opencode
+project-tree.txt
+PLAN.md
