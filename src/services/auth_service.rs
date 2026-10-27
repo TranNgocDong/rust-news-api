@@ -1,6 +1,6 @@
 use chrono::{Duration, Utc};
 use serde::{Deserialize, Serialize};
-use sqlx::error::DatabaseError;
+//use sqlx::error::DatabaseError;
 use jsonwebtoken::{
     Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode, errors::ErrorKind,
 };

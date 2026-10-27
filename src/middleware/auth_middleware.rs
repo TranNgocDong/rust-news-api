@@ -47,17 +47,53 @@ where
     }
 }
 
+/// Dùng cho route public: có token thì có user, không có token thì `None`.
+pub struct OptionalAuthUser(pub Option<User>);
+
+impl FromRequestParts<AppState> for OptionalAuthUser {
+    type Rejection = AppError;
+
+    async fn from_request_parts(
+        parts: &mut Parts,
+        state: &AppState,
+    ) -> Result<Self, Self::Rejection> {
+        let user = authenticate_request(&parts.headers, state).await?;
+        Ok(Self(user))
+    }
+}
+
 pub async fn auth_middleware(
     State(state): State<AppState>,
     mut request: Request,
     next: Next,
 ) -> Result<Response, AppError> {
-    let token = {
-        let headers = request.headers();
-        extract_bearer_token(headers)?.to_string()
+    let user = authenticate_request(request.headers(), &state)
+        .await?
+        .ok_or_else(|| AppError::UnAuthorized("Thiếu Authorization header".to_string()))?;
+
+    request.extensions_mut().insert(AuthUser(user));
+
+    Ok(next.run(request).await)
+}
+
+/// Đọc Bearer token (nếu có), decode JWT và reload user từ DB.
+/// - Không có header  -> Ok(None)
+/// - Header sai/token sai/hết hạn -> Err(401)
+pub async fn authenticate_request(
+    headers: &HeaderMap,
+    state: &AppState,
+) -> Result<Option<User>, AppError> {
+    let token = match headers.get(header::AUTHORIZATION) {
+        Some(value) => {
+            let value = value.to_str().map_err(|_| {
+                AppError::UnAuthorized("Authorization header không hợp lệ".to_string())
+            })?;
+            extract_bearer_token(value)?
+        }
+        None => return Ok(None),
     };
 
-    let claims = auth_service::decode_token(&token, &state.config.jwt_secret)?;
+    let claims = auth_service::decode_token(token, &state.config.jwt_secret)?;
 
     let user_id = claims
         .sub
@@ -78,17 +114,10 @@ pub async fn auth_middleware(
         AppError::UnAuthorized("Người dùng không tồn tại hoặc đã bị xóa".to_string())
     })?;
 
-    request.extensions_mut().insert(AuthUser(user));
-
-    Ok(next.run(request).await)
+    Ok(Some(user))
 }
 
-fn extract_bearer_token(headers: &HeaderMap) -> Result<&str, AppError> {
-    let value = headers
-        .get(header::AUTHORIZATION)
-        .and_then(|value| value.to_str().ok())
-        .ok_or_else(|| AppError::UnAuthorized("Thiếu Authorization header".to_string()))?;
-
+fn extract_bearer_token(value: &str) -> Result<&str, AppError> {
     let (scheme, token) = value.split_once(' ').ok_or_else(|| {
         AppError::UnAuthorized("Authorization phải có dạng: Bearer <token>".to_string())
     })?;

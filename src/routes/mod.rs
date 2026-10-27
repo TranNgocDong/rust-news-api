@@ -1,4 +1,5 @@
 pub mod auth_routes;
+pub mod news_routes;
 pub mod user_routes;
 
 use axum::Router;
@@ -9,4 +10,5 @@ pub fn router(state: AppState) -> Router<AppState> {
     Router::new()
         .nest("/api/auth", auth_routes::router())
         .nest("/api/users", user_routes::router(state))
+        .nest("/api/news", news_routes::router())
 }

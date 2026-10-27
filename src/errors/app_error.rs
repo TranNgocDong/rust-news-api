@@ -1,7 +1,7 @@
 
 use axum::{
     Json, 
-    extract::rejection::{JsonRejection, PathRejection}, 
+    extract::rejection::{JsonRejection, PathRejection, QueryRejection}, 
     http::StatusCode, 
     response::{IntoResponse, Response},
 };
@@ -64,5 +64,13 @@ impl From<PathRejection> for AppError {
         Self::BadRequest(
             format!("Lỗi khi phân tích đường dẫn: {}", rejection.to_string())
         )
+    }
+}
+impl From<QueryRejection> for AppError {
+    fn from(rejection: QueryRejection) -> Self {
+        Self::BadRequest(format!(
+            "Lỗi khi phân tích query: {}",
+            rejection.body_text()
+        ))
     }
 }

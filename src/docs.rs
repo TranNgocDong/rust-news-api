@@ -4,9 +4,12 @@ use utoipa::{
 };
 
 use crate::{
-    controllers::{auth_controller, user_controller},
+    controllers::{auth_controller, news_controller, user_controller},
     dto::{
         auth_dto::{AuthEnvelope, AuthResponse, LoginRequest, RegisterRequest},
+        news_dto::{
+            NewsEnvelope, NewsListData, NewsListEnvelope, NewsResponse,
+        },
         user_dto::{
             UpdatePermissionsRequest, UserEnvelope, UserListEnvelope, UserResponse,
         },
@@ -45,7 +48,9 @@ impl Modify for SecurityAddon {
         auth_controller::login,
         user_controller::get_me,
         user_controller::list_users,
-        user_controller::update_permissions
+        user_controller::update_permissions,
+        news_controller::list_news,
+        news_controller::get_news
     ),
     components(schemas(
         RegisterRequest,
@@ -56,11 +61,16 @@ impl Modify for SecurityAddon {
         UserEnvelope,
         UserListEnvelope,
         UpdatePermissionsRequest,
+        NewsResponse,
+        NewsListData,
+        NewsEnvelope,
+        NewsListEnvelope,
         ErrorResponse
     )),
     tags(
         (name = "auth", description = "Đăng ký và đăng nhập"),
-        (name = "users", description = "Thông tin người dùng và phân quyền")
+        (name = "users", description = "Thông tin người dùng và phân quyền"),
+        (name = "news", description = "Đọc, tìm kiếm và sắp xếp tin tức")
     )
 )]
 pub struct ApiDoc;
