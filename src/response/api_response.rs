@@ -10,7 +10,6 @@ pub struct ErrorResponse {
     pub message: String,
 }
 
-
 #[derive(Debug, Serialize)]
 pub struct ApiResponse<T> {
     pub success: bool,

@@ -30,15 +30,14 @@ impl Config {
         let database_url = env::var("DATABASE_URL")
             .map_err(|_| "Thiếu DATABASE_URL trong file .env".to_string())?;
 
-        let jwt_secret = env::var("JWT_SECRET")
-            .map_err(|_| "Thiếu JWT_SECRET trong file .env".to_string())?;
+        let jwt_secret =
+            env::var("JWT_SECRET").map_err(|_| "Thiếu JWT_SECRET trong file .env".to_string())?;
 
         if jwt_secret.len() < 32 {
             return Err("JWT_SECRET phải có ít nhất 32 ký tự".to_string());
         }
 
-        let upload_dir =
-            env::var("UPLOAD_DIR").unwrap_or_else(|_| DEFAULT_UPLOAD_DIR.to_string());
+        let upload_dir = env::var("UPLOAD_DIR").unwrap_or_else(|_| DEFAULT_UPLOAD_DIR.to_string());
 
         let max_upload_bytes = match env::var("MAX_UPLOAD_BYTES") {
             Ok(value) => value

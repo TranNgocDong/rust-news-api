@@ -16,15 +16,14 @@ const MAX_LIMIT: u32 = 100;
 // $1 = pattern tìm kiếm (NULL nếu không tìm).
 const SEARCH_FILTER: &str = "( $1::text IS NULL OR title ILIKE $1 OR content ILIKE $1 )";
 
-pub async fn list_news(
-    state: &AppState,
-    query: NewsListQuery,
-) -> Result<NewsListData, AppError> {
+pub async fn list_news(state: &AppState, query: NewsListQuery) -> Result<NewsListData, AppError> {
     let page = query.page.unwrap_or(DEFAULT_PAGE);
     let limit = query.limit.unwrap_or(DEFAULT_LIMIT);
 
     if page == 0 {
-        return Err(AppError::BadRequest("page phải lớn hơn hoặc bằng 1".to_string()));
+        return Err(AppError::BadRequest(
+            "page phải lớn hơn hoặc bằng 1".to_string(),
+        ));
     }
 
     if !(1..=MAX_LIMIT).contains(&limit) {
@@ -117,7 +116,6 @@ pub async fn get_news_by_id(state: &AppState, id: i64) -> Result<NewsResponse, A
     Ok(NewsResponse::from(&news))
 }
 
-
 pub async fn create_news(
     state: &AppState,
     author_id: i64,
@@ -195,7 +193,9 @@ fn normalize_news_input(
     let title = title.trim().to_string();
 
     if title.is_empty() {
-        return Err(AppError::BadRequest("title không được để trống".to_string()));
+        return Err(AppError::BadRequest(
+            "title không được để trống".to_string(),
+        ));
     }
 
     // DB là VARCHAR(255) tính theo ký tự, nên đếm bằng chars() chứ không phải len() (byte).

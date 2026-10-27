@@ -5,16 +5,14 @@ use utoipa::{
 
 use crate::{
     controllers::{auth_controller, file_controller, news_controller, user_controller},
-
     dto::{
         auth_dto::{AuthEnvelope, AuthResponse, LoginRequest, RegisterRequest},
-        file_dto::{FileEnvelope, UploadFileResponse, UploadFileRequest},
+        file_dto::{FileEnvelope, UploadFileRequest, UploadFileResponse},
         news_dto::{
-            NewsEnvelope, NewsListData, NewsListEnvelope, NewsResponse, CreateNewsRequest, UpdateNewsRequest
+            CreateNewsRequest, NewsEnvelope, NewsListData, NewsListEnvelope, NewsResponse,
+            UpdateNewsRequest,
         },
-        user_dto::{
-            UpdatePermissionsRequest, UserEnvelope, UserListEnvelope, UserResponse,
-        },
+        user_dto::{UpdatePermissionsRequest, UserEnvelope, UserListEnvelope, UserResponse},
     },
     response::ErrorResponse,
 };

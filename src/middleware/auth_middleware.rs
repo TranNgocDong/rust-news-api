@@ -5,12 +5,7 @@ use axum::{
     response::Response,
 };
 
-use crate::{
-    errors::AppError,
-    models::user::User,
-    services::auth_service,
-    state::AppState,
-};
+use crate::{errors::AppError, models::user::User, services::auth_service, state::AppState};
 
 #[derive(Clone)]
 pub struct AuthUser(pub User);
@@ -42,17 +37,10 @@ where
 {
     type Rejection = AppError;
 
-    async fn from_request_parts(
-        parts: &mut Parts,
-        _state: &S,
-    ) -> Result<Self, Self::Rejection> {
-        parts
-            .extensions
-            .get::<AuthUser>()
-            .cloned()
-            .ok_or_else(|| {
-                AppError::UnAuthorized("Chưa xác thực hoặc thiếu middleware".to_string())
-            })
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        parts.extensions.get::<AuthUser>().cloned().ok_or_else(|| {
+            AppError::UnAuthorized("Chưa xác thực hoặc thiếu middleware".to_string())
+        })
     }
 }
 
@@ -119,9 +107,7 @@ pub async fn authenticate_request(
     .bind(user_id)
     .fetch_optional(&state.pool)
     .await?
-    .ok_or_else(|| {
-        AppError::UnAuthorized("Người dùng không tồn tại hoặc đã bị xóa".to_string())
-    })?;
+    .ok_or_else(|| AppError::UnAuthorized("Người dùng không tồn tại hoặc đã bị xóa".to_string()))?;
 
     Ok(Some(user))
 }

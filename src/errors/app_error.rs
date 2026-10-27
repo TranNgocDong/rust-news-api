@@ -1,10 +1,9 @@
-
 use axum::{
-    Json, 
-    extract::rejection::{JsonRejection, PathRejection, QueryRejection}, 
-    http::StatusCode, 
-    response::{IntoResponse, Response},
+    Json,
     extract::multipart::MultipartRejection,
+    extract::rejection::{JsonRejection, PathRejection, QueryRejection},
+    http::StatusCode,
+    response::{IntoResponse, Response},
 };
 
 use crate::response::ApiResponse;
@@ -18,8 +17,7 @@ pub enum AppError {
     UnAuthorized(String),
     Conflict(String),
     Forbidden(String),
-    PayloadTooLarge(String)
-
+    PayloadTooLarge(String),
 }
 
 impl IntoResponse for AppError {
@@ -56,17 +54,16 @@ impl From<sqlx::Error> for AppError {
 
 impl From<JsonRejection> for AppError {
     fn from(rejection: JsonRejection) -> Self {
-        Self::BadRequest(
-            format!("Lỗi khi phân tích JSON: {}", rejection.body_text())
-        )
+        Self::BadRequest(format!("Lỗi khi phân tích JSON: {}", rejection.body_text()))
     }
 }
 
 impl From<PathRejection> for AppError {
     fn from(rejection: PathRejection) -> Self {
-        Self::BadRequest(
-            format!("Lỗi khi phân tích đường dẫn: {}", rejection.to_string())
-        )
+        Self::BadRequest(format!(
+            "Lỗi khi phân tích đường dẫn: {}",
+            rejection.to_string()
+        ))
     }
 }
 impl From<QueryRejection> for AppError {

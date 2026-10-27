@@ -1,25 +1,21 @@
 mod config;
+mod controllers;
+mod docs;
+mod dto;
 mod errors;
-mod response;
-mod state;
+mod middleware;
 #[allow(dead_code)]
 mod models;
-mod dto;
-mod controllers;
+mod response;
 mod routes;
 mod services;
-mod docs;
-mod middleware;
+mod state;
 
 use docs::ApiDoc;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
-use axum::{
-    Router,
-    extract::State,
-    routing::get,
-};
+use axum::{Router, extract::State, routing::get};
 use serde_json::{Value, json};
 
 use config::{Config, database};
@@ -56,7 +52,12 @@ async fn main() {
         std::process::exit(1);
     }
     println!("Đã chạy migration thành công.");
-    print!("Cấu hình JWT {} ký tự | upload {} | tối đa {} \n ", config.jwt_secret.len(), config.upload_dir, config.max_upload_bytes);
+    print!(
+        "Cấu hình JWT {} ký tự | upload {} | tối đa {} \n ",
+        config.jwt_secret.len(),
+        config.upload_dir,
+        config.max_upload_bytes
+    );
 
     let address = config.server_address();
     let app_state = AppState::new(pool, config);
@@ -65,10 +66,7 @@ async fn main() {
         .route("/", get(home))
         .route("/health", get(health))
         .merge(routes::router(app_state.clone()))
-        .merge(
-            SwaggerUi::new("/swagger-ui")
-                .url("/api-docs/openapi.json", ApiDoc::openapi()),
-        )
+        .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()))
         .fallback(not_found)
         .with_state(app_state);
 

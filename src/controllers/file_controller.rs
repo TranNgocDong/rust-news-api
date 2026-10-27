@@ -1,9 +1,5 @@
 use axum::{
-    extract::{
-        Multipart, Path, State,
-        multipart::MultipartRejection,
-        rejection::PathRejection,
-    },
+    extract::{Multipart, Path, State, multipart::MultipartRejection, rejection::PathRejection},
     http::StatusCode,
 };
 

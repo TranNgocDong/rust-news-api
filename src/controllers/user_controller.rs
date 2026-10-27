@@ -7,9 +7,7 @@ use axum::{
 };
 
 use crate::{
-    dto::user_dto::{
-        UpdatePermissionsRequest, UserEnvelope, UserListEnvelope, UserResponse,
-    },
+    dto::user_dto::{UpdatePermissionsRequest, UserEnvelope, UserListEnvelope, UserResponse},
     errors::AppError,
     middleware::auth_middleware::AuthUser,
     response::{ApiResponse, ErrorResponse},
@@ -28,10 +26,7 @@ use crate::{
     )
 )]
 pub async fn get_me(auth: AuthUser) -> ApiResponse<UserResponse> {
-    ApiResponse::success(
-        "Thông tin người dùng hiện tại",
-        UserResponse::from(&auth.0),
-    )
+    ApiResponse::success("Thông tin người dùng hiện tại", UserResponse::from(&auth.0))
 }
 
 #[utoipa::path(

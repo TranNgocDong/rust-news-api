@@ -1,9 +1,4 @@
-use axum::{
-    Json,
-    extract::State,
-    extract::rejection::JsonRejection,
-    http::StatusCode,
-};
+use axum::{Json, extract::State, extract::rejection::JsonRejection, http::StatusCode};
 
 use crate::{
     dto::auth_dto::{AuthEnvelope, AuthResponse, LoginRequest, RegisterRequest},

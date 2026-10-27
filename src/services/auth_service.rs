@@ -33,12 +33,11 @@ pub async fn register(
 
     let password = payload.password;
 
-    let password_hash = tokio::task::spawn_blocking(move || {
-        bcrypt::hash(password, bcrypt::DEFAULT_COST)
-    })
-    .await
-    .map_err(|error| AppError::Internal(format!("Lỗi xử lý mật khẩu: {error}")))?
-    .map_err(|error| AppError::Internal(format!("Lỗi hash mật khẩu: {error}")))?;
+    let password_hash =
+        tokio::task::spawn_blocking(move || bcrypt::hash(password, bcrypt::DEFAULT_COST))
+            .await
+            .map_err(|error| AppError::Internal(format!("Lỗi xử lý mật khẩu: {error}")))?
+            .map_err(|error| AppError::Internal(format!("Lỗi hash mật khẩu: {error}")))?;
 
     let user = sqlx::query_as::<_, User>(
         r#"
@@ -63,10 +62,7 @@ pub async fn register(
     })
 }
 
-pub async fn login(
-    state: &AppState,
-    payload: LoginRequest,
-) -> Result<AuthResponse, AppError> {
+pub async fn login(state: &AppState, payload: LoginRequest) -> Result<AuthResponse, AppError> {
     let username = normalize_username(&payload.username)?;
 
     let user = sqlx::query_as::<_, User>(
@@ -89,12 +85,10 @@ pub async fn login(
     let password = payload.password;
     let password_hash = user.password_hash.clone();
 
-    let is_valid = tokio::task::spawn_blocking(move || {
-        bcrypt::verify(password, &password_hash)
-    })
-    .await
-    .map_err(|error| AppError::Internal(format!("Lỗi xử lý mật khẩu: {error}")))?
-    .map_err(|error| AppError::Internal(format!("Lỗi xác thực mật khẩu: {error}")))?;
+    let is_valid = tokio::task::spawn_blocking(move || bcrypt::verify(password, &password_hash))
+        .await
+        .map_err(|error| AppError::Internal(format!("Lỗi xử lý mật khẩu: {error}")))?
+        .map_err(|error| AppError::Internal(format!("Lỗi xác thực mật khẩu: {error}")))?;
 
     if !is_valid {
         return Err(AppError::UnAuthorized(

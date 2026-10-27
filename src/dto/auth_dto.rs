@@ -1,8 +1,6 @@
+use crate::dto::user_dto::UserResponse;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
-use crate::dto::user_dto::UserResponse;
-
-
 
 #[derive(Debug, Deserialize, ToSchema)]
 pub struct RegisterRequest {
@@ -23,7 +21,6 @@ pub struct AuthResponse {
     pub expires_in: i64,
     pub user: UserResponse,
 }
-
 
 #[allow(dead_code)]
 #[derive(Debug, Serialize, ToSchema)]

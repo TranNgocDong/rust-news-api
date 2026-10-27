@@ -1,3 +1,3 @@
 pub mod api_response;
 
-pub use api_response::{ErrorResponse, ApiResponse};
+pub use api_response::{ApiResponse, ErrorResponse};

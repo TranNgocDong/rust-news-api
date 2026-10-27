@@ -4,9 +4,7 @@ use axum::{
 };
 
 use crate::{
-    controllers::news_controller::{
-        create_news, delete_news, get_news, list_news, update_news,
-    },
+    controllers::news_controller::{create_news, delete_news, get_news, list_news, update_news},
     middleware::auth_middleware::auth_middleware,
     state::AppState,
 };

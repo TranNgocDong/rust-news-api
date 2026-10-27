@@ -7,11 +7,7 @@ use axum::{
 };
 use tokio::io::AsyncWriteExt;
 
-use crate::{
-    dto::file_dto::UploadFileResponse,
-    errors::AppError,
-    state::AppState,
-};
+use crate::{dto::file_dto::UploadFileResponse, errors::AppError, state::AppState};
 
 pub async fn save_upload(
     state: &AppState,
@@ -36,22 +32,11 @@ pub async fn save_upload(
     // Chỉ tin content-type, KHÔNG dùng extension của client để đặt tên file.
     let content_type = field
         .content_type()
-        .map(|value| {
-            value
-                .split(';')
-                .next()
-                .unwrap_or("")
-                .trim()
-                .to_lowercase()
-        })
-        .ok_or_else(|| {
-            AppError::BadRequest("Thiếu Content-Type của file".to_string())
-        })?;
+        .map(|value| value.split(';').next().unwrap_or("").trim().to_lowercase())
+        .ok_or_else(|| AppError::BadRequest("Thiếu Content-Type của file".to_string()))?;
 
     let extension = extension_from_content_type(&content_type).ok_or_else(|| {
-        AppError::BadRequest(
-            "Chỉ chấp nhận ảnh jpeg, png, webp hoặc gif".to_string(),
-        )
+        AppError::BadRequest("Chỉ chấp nhận ảnh jpeg, png, webp hoặc gif".to_string())
     })?;
 
     // Đọc theo chunk để không nạp cả file quá lớn vào RAM trước khi kiểm tra.
@@ -91,9 +76,7 @@ pub async fn delete_file(state: &AppState, file_name: &str) -> Result<(), AppErr
         Err(error) if error.kind() == ErrorKind::NotFound => {
             Err(AppError::NotFound("Không tìm thấy file".to_string()))
         }
-        Err(error) => Err(AppError::Internal(format!(
-            "Không xóa được file: {error}"
-        ))),
+        Err(error) => Err(AppError::Internal(format!("Không xóa được file: {error}"))),
     }
 }
 
@@ -133,9 +116,7 @@ async fn write_new_file(
                 if let Err(error) = file.write_all(data).await {
                     // Ghi lỗi giữa chừng thì dọn file dở, tránh rác trong uploads/.
                     let _ = tokio::fs::remove_file(&path).await;
-                    return Err(AppError::Internal(format!(
-                        "Không ghi được file: {error}"
-                    )));
+                    return Err(AppError::Internal(format!("Không ghi được file: {error}")));
                 }
 
                 file.flush()
@@ -146,9 +127,7 @@ async fn write_new_file(
             }
             Err(error) if error.kind() == ErrorKind::AlreadyExists => continue,
             Err(error) => {
-                return Err(AppError::Internal(format!(
-                    "Không tạo được file: {error}"
-                )));
+                return Err(AppError::Internal(format!("Không tạo được file: {error}")));
             }
         }
     }
@@ -165,9 +144,12 @@ fn validate_file_name(file_name: &str) -> Result<(), AppError> {
         || file_name.contains('\\')
         || file_name.contains("..")
         || file_name.starts_with('.')
-        || !file_name
-            .chars()
-            .all(|character| character.is_ascii_alphanumeric() || character == '.' || character == '_' || character == '-');
+        || !file_name.chars().all(|character| {
+            character.is_ascii_alphanumeric()
+                || character == '.'
+                || character == '_'
+                || character == '-'
+        });
 
     if invalid {
         return Err(AppError::BadRequest("Tên file không hợp lệ".to_string()));

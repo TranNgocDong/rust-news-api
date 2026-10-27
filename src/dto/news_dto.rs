@@ -70,7 +70,6 @@ pub struct NewsListEnvelope {
     pub data: NewsListData,
 }
 
-
 #[derive(Debug, Deserialize, ToSchema)]
 pub struct CreateNewsRequest {
     /// Tiêu đề, 1..=255 ký tự
