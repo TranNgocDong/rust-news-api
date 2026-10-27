@@ -4,6 +4,7 @@ use axum::{
     extract::rejection::{JsonRejection, PathRejection, QueryRejection}, 
     http::StatusCode, 
     response::{IntoResponse, Response},
+    extract::multipart::MultipartRejection,
 };
 
 use crate::response::ApiResponse;
@@ -17,6 +18,7 @@ pub enum AppError {
     UnAuthorized(String),
     Conflict(String),
     Forbidden(String),
+    PayloadTooLarge(String)
 
 }
 
@@ -29,6 +31,7 @@ impl IntoResponse for AppError {
             Self::UnAuthorized(message) => (StatusCode::UNAUTHORIZED, message),
             Self::Conflict(message) => (StatusCode::CONFLICT, message),
             Self::Forbidden(message) => (StatusCode::FORBIDDEN, message),
+            Self::PayloadTooLarge(message) => (StatusCode::PAYLOAD_TOO_LARGE, message),
             Self::Internal(detail) => {
                 eprintln!("Lỗi nội bộ: {detail}");
                 (
@@ -72,5 +75,10 @@ impl From<QueryRejection> for AppError {
             "Lỗi khi phân tích query: {}",
             rejection.body_text()
         ))
+    }
+}
+impl From<MultipartRejection> for AppError {
+    fn from(rejection: MultipartRejection) -> Self {
+        Self::BadRequest(format!("Lỗi multipart: {}", rejection.body_text()))
     }
 }
