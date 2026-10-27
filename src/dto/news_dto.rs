@@ -69,3 +69,29 @@ pub struct NewsListEnvelope {
     pub message: String,
     pub data: NewsListData,
 }
+
+
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct CreateNewsRequest {
+    /// Tiêu đề, 1..=255 ký tự
+    #[schema(example = "Rust va Axum", max_length = 255)]
+    pub title: String,
+    /// Nội dung, không được rỗng
+    #[schema(example = "Noi dung bai viet")]
+    pub content: String,
+    /// URL ảnh, không bắt buộc
+    #[schema(example = "https://example.com/anh.jpg")]
+    pub image_url: Option<String>,
+}
+
+#[derive(Debug, Deserialize, ToSchema)]
+pub struct UpdateNewsRequest {
+    /// Tiêu đề, 1..=255 ký tự
+    #[schema(example = "Tieu de moi", max_length = 255)]
+    pub title: String,
+    /// Nội dung, không được rỗng
+    #[schema(example = "Noi dung moi")]
+    pub content: String,
+    /// URL ảnh; bỏ trống hoặc null nghĩa là xoá ảnh
+    pub image_url: Option<String>,
+}

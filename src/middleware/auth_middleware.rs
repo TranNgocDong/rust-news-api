@@ -25,6 +25,15 @@ impl AuthUser {
             ))
         }
     }
+    pub fn require_news_manager(&self) -> Result<(), AppError> {
+        if self.0.can_manage_news() {
+            Ok(())
+        } else {
+            Err(AppError::Forbidden(
+                "Chỉ admin hoặc manager mới được quản lý tin tức".to_string(),
+            ))
+        }
+    }
 }
 
 impl<S> FromRequestParts<S> for AuthUser

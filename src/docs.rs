@@ -8,7 +8,7 @@ use crate::{
     dto::{
         auth_dto::{AuthEnvelope, AuthResponse, LoginRequest, RegisterRequest},
         news_dto::{
-            NewsEnvelope, NewsListData, NewsListEnvelope, NewsResponse,
+            NewsEnvelope, NewsListData, NewsListEnvelope, NewsResponse, CreateNewsRequest, UpdateNewsRequest
         },
         user_dto::{
             UpdatePermissionsRequest, UserEnvelope, UserListEnvelope, UserResponse,
@@ -50,7 +50,10 @@ impl Modify for SecurityAddon {
         user_controller::list_users,
         user_controller::update_permissions,
         news_controller::list_news,
-        news_controller::get_news
+        news_controller::get_news,
+        news_controller::create_news,
+        news_controller::update_news,
+        news_controller::delete_news
     ),
     components(schemas(
         RegisterRequest,
@@ -65,7 +68,9 @@ impl Modify for SecurityAddon {
         NewsListData,
         NewsEnvelope,
         NewsListEnvelope,
-        ErrorResponse
+        ErrorResponse,
+        CreateNewsRequest,
+        UpdateNewsRequest
     )),
     tags(
         (name = "auth", description = "Đăng ký và đăng nhập"),

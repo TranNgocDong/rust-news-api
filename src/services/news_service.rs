@@ -1,12 +1,13 @@
 use sqlx::AssertSqlSafe;
 
 use crate::{
-    dto::news_dto::{NewsListData, NewsListQuery, NewsResponse},
+    dto::news_dto::{
+        CreateNewsRequest, NewsListData, NewsListQuery, NewsResponse, UpdateNewsRequest,
+    },
     errors::AppError,
     models::news::News,
     state::AppState,
 };
-
 const DEFAULT_PAGE: u32 = 1;
 const DEFAULT_LIMIT: u32 = 10;
 const MAX_LIMIT: u32 = 100;
@@ -114,4 +115,116 @@ pub async fn get_news_by_id(state: &AppState, id: i64) -> Result<NewsResponse, A
     .ok_or_else(|| AppError::NotFound("Không tìm thấy tin tức".to_string()))?;
 
     Ok(NewsResponse::from(&news))
+}
+
+
+pub async fn create_news(
+    state: &AppState,
+    author_id: i64,
+    payload: CreateNewsRequest,
+) -> Result<NewsResponse, AppError> {
+    let (title, content, image_url) =
+        normalize_news_input(payload.title, payload.content, payload.image_url)?;
+
+    let news = sqlx::query_as::<_, News>(
+        r#"
+        INSERT INTO news (title, content, author_id, image_url)
+        VALUES ($1, $2, $3, $4)
+        RETURNING id, title, content, author_id, image_url, created_at, updated_at
+        "#,
+    )
+    .bind(&title)
+    .bind(&content)
+    .bind(author_id)
+    .bind(&image_url)
+    .fetch_one(&state.pool)
+    .await?;
+
+    Ok(NewsResponse::from(&news))
+}
+
+pub async fn update_news(
+    state: &AppState,
+    id: i64,
+    payload: UpdateNewsRequest,
+) -> Result<NewsResponse, AppError> {
+    let (title, content, image_url) =
+        normalize_news_input(payload.title, payload.content, payload.image_url)?;
+
+    let news = sqlx::query_as::<_, News>(
+        r#"
+        UPDATE news
+        SET title = $1,
+            content = $2,
+            image_url = $3,
+            updated_at = NOW()
+        WHERE id = $4
+        RETURNING id, title, content, author_id, image_url, created_at, updated_at
+        "#,
+    )
+    .bind(&title)
+    .bind(&content)
+    .bind(&image_url)
+    .bind(id)
+    .fetch_optional(&state.pool)
+    .await?
+    .ok_or_else(|| AppError::NotFound("Không tìm thấy tin tức".to_string()))?;
+
+    Ok(NewsResponse::from(&news))
+}
+
+pub async fn delete_news(state: &AppState, id: i64) -> Result<(), AppError> {
+    let result = sqlx::query("DELETE FROM news WHERE id = $1")
+        .bind(id)
+        .execute(&state.pool)
+        .await?;
+
+    if result.rows_affected() == 0 {
+        return Err(AppError::NotFound("Không tìm thấy tin tức".to_string()));
+    }
+
+    Ok(())
+}
+
+/// Chuẩn hoá + validate input dùng chung cho create và update.
+fn normalize_news_input(
+    title: String,
+    content: String,
+    image_url: Option<String>,
+) -> Result<(String, String, Option<String>), AppError> {
+    let title = title.trim().to_string();
+
+    if title.is_empty() {
+        return Err(AppError::BadRequest("title không được để trống".to_string()));
+    }
+
+    // DB là VARCHAR(255) tính theo ký tự, nên đếm bằng chars() chứ không phải len() (byte).
+    if title.chars().count() > 255 {
+        return Err(AppError::BadRequest(
+            "title không được dài quá 255 ký tự".to_string(),
+        ));
+    }
+
+    let content = content.trim().to_string();
+
+    if content.is_empty() {
+        return Err(AppError::BadRequest(
+            "content không được để trống".to_string(),
+        ));
+    }
+
+    // Chuỗi rỗng hoặc toàn khoảng trắng coi như không có ảnh.
+    let image_url = image_url
+        .map(|url| url.trim().to_string())
+        .filter(|url| !url.is_empty());
+
+    if let Some(url) = &image_url {
+        if url.chars().count() > 2048 {
+            return Err(AppError::BadRequest(
+                "image_url không được dài quá 2048 ký tự".to_string(),
+            ));
+        }
+    }
+
+    Ok((title, content, image_url))
 }
